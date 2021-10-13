@@ -1,0 +1,398 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+
+using namespace std;
+
+const string PATH = "d:\\output.txt";
+
+struct Number {
+	int code;
+	int oper;
+	int number;
+};
+
+struct Phone {
+	string name;
+	string surname;
+	string describe;
+	Number phone;
+	Number mobile;
+	bool stats;
+	int index;
+	int index_sur;// скрытый от пользователя параметр для сортировки по имени
+};
+
+bool ComprareNum(Number lhs, Number rhs);
+bool CheckNum(int code, int oper);
+void show(Phone a);
+
+bool ComprareName(int index1, int index_sur1, int index2, int index_sur2) {
+	if (index1 < index2) return true;
+	if (index1 == index2) {
+		if (index_sur1 <= index_sur2) return true;
+	}
+	return false;
+}
+
+Phone Put() {
+	Phone tmp;
+	cin.get();
+	cout << "\n\n";
+	cout << "Enter name --> ";
+	getline(cin, tmp.name);
+	cout << "Enter surname --> ";
+	getline(cin, tmp.surname);
+	cout << "Enter describe --> ";
+	getline(cin, tmp.describe);
+	cout << "Enter code --> ";
+	cin >> tmp.phone.code;
+	cout << "Enter operator --> ";
+	cin >> tmp.phone.oper;
+	cout << "Enter fax --> ";
+	cin >> tmp.phone.number;
+	while (!CheckNum(tmp.phone.code, tmp.phone.oper)) {
+		cout << "Incorect oper or country code, try again \n";
+		cout << "Enter code --> ";
+		cin >> tmp.phone.code;
+		cout << "Enter operator --> ";
+		cin >> tmp.phone.oper;
+	}
+	cout << "Enter code --> ";
+	cin >> tmp.mobile.code;
+	cout << "Enter operator --> ";
+	cin >> tmp.mobile.oper;
+	cout << "Enter mobile --> ";
+	cin >> tmp.mobile.number;
+	while (!CheckNum(tmp.mobile.code, tmp.mobile.oper)) {
+		cout << "Incorect oper or country code, try again \n";
+		cout << "Enter code --> ";
+		cin >> tmp.mobile.code;
+		cout << "Enter operator --> ";
+		cin >> tmp.mobile.oper;
+	}
+	tmp.stats = true;
+	cout << "\n\n";
+	return tmp;
+}
+
+Phone* Add(Phone* a, int size) {
+	Phone* new_arr = new Phone[size];
+	for (int i = 0; i < size - 1; ++i) {
+		new_arr[i] = a[i];
+	}
+	new_arr[size - 1] = Put();
+	return new_arr;
+}
+
+void PrintShow(Phone a) {
+	ofstream output(PATH, ios::app);
+	output << "Name: " << a.name << endl;
+	output << "Surname: " << a.surname << endl;
+	output << "Describe: " << a.describe << endl;
+	output << "Fax: " << a.phone.code << " " << a.phone.oper << " " << a.phone.number << endl;
+	output << "Mobile: " << a.mobile.code << " " << a.mobile.oper << " " << a.mobile.number << endl;
+	output << "Status: " << a.stats << endl;
+	cout << "\n\n";
+}
+
+void show(Phone a) {
+	cout << "\n\n";
+	cout << "Name: " << a.name << endl;
+	cout << "Surname: " << a.surname << endl;
+	cout << "Describe: " << a.describe << endl;
+	cout << "Fax: " << a.phone.code << " " << a.phone.oper << " " << a.phone.number << endl;
+	cout << "Mobile: " << a.mobile.code << " " << a.mobile.oper << " " << a.mobile.number << endl;
+	cout << "Status: " << a.stats << endl;
+	cout << "\n\n";
+}
+
+void Show(Phone* a, int size) {
+	for (int i = 0; i < size; ++i) {
+		show(a[i]);
+	}
+}
+
+
+
+int Index(string name) {
+	string line = { "abcdefghijklmnopqrstuvwxyz" };
+	int index = 0;
+	int x = tolower(name[0]);
+	for (int i = 0; i < 26; ++i) {
+		if (x != line[i]) {
+			++index;
+		}
+		else {
+			break;
+		}
+	}
+	return index;
+}
+
+void SortByName(int size, Phone* a) {
+	for (int i = 0; i < size; ++i) {
+		a[i].index = Index(a[i].name);
+		a[i].index_sur = Index(a[i].surname);
+	}
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size - 1; j++) {
+			if (!ComprareName(a[j].index, a[j].index_sur, a[j + 1].index, a[j + 1].index_sur)) {
+				Phone tmp = a[j];
+				a[j] = a[j + 1];
+				a[j + 1] = tmp;
+			}
+		}
+	}
+}
+
+void SortByNum(int size, Phone* a) {
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size - 1; j++) {
+			if (ComprareNum(a[j].phone, a[j + 1].phone)) {
+				Phone tmp = a[j];
+				a[j] = a[j + 1];
+				a[j + 1] = tmp;
+			}
+		}
+	}
+}
+
+void SortByMobile(int size, Phone* a) {
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size - 1; j++) {
+			if (ComprareNum(a[j].mobile, a[j + 1].mobile)) {
+				Phone tmp = a[j];
+				a[j] = a[j + 1];
+				a[j + 1] = tmp;
+			}
+		}
+	}
+}
+
+bool ComprareNum(Number lhs, Number rhs) {
+	if (rhs.code < lhs.code) return true;
+	if (rhs.code == lhs.code) {
+		if (rhs.oper < lhs.oper) return true;
+		if (rhs.oper == lhs.oper) {
+			if (rhs.number <= lhs.number) return true;
+		}
+	}
+	return false;
+}
+
+bool CheckNum(int code, int oper) {
+	if (code < 0 || code > 1000) {
+		return false;
+	}
+	if (oper < 0 || oper >= 100) {
+		return false;
+	}
+	return true;
+}
+
+void SearchByName(Phone* arr, int size, string name) {
+	for (int i = 0; i < size; ++i) {
+		if (arr[i].name == name && arr[i].stats == true) {
+			show(arr[i]);
+		}
+	}
+}
+void SearchByNum(Phone* arr, int size, int code, int oper, int num) {
+	for (int i = 0; i < size; ++i) {
+		if (arr[i].phone.code == code && arr[i].phone.oper == oper && arr[i].phone.number == num && arr[i].stats == true) {
+			show(arr[i]);
+		}
+	}
+}
+
+void SearchByMob(Phone* arr, int size, int code, int oper, int num) {
+	for (int i = 0; i < size; ++i) {
+		if (arr[i].mobile.code == code && arr[i].mobile.oper == oper && arr[i].mobile.number == num && arr[i].stats == true) {
+			show(arr[i]);
+		}
+	}
+}
+
+void SearchByDescribe(Phone* arr, int size, string desc) {
+	for (int i = 0; i < size; ++i) {
+		if (arr[i].describe == desc && arr[i].stats == true) {
+			show(arr[i]);
+		}
+	}
+}
+
+int FindIndex(Phone* arr, int size, string line) {
+	int index = 0;
+	for (int i = 0; i < size; ++i) {
+		if (arr[i].name == line) {
+			index = i;
+			break;
+		}
+	}
+	return index;
+}
+
+void File(Phone* arr, int size) {
+	ofstream output(PATH);
+	for (int i = 0; i < size; ++i) {
+		PrintShow(arr[i]);
+	}
+}
+
+Phone* Read(int size) {
+	ifstream in(PATH);
+	in >> size;
+	Phone* new_arr = new Phone[size];
+	for (int i = 0; i < size; ++i) {
+		in.ignore(1);
+		in >> new_arr[i].name;
+		in.ignore(1);
+		in >> new_arr[i].surname;
+		in.ignore(1);
+		in >> new_arr[i].phone.code;
+		in.ignore(1);
+		in >> new_arr[i].phone.oper;
+		in.ignore(1);
+		in >> new_arr[i].phone.number;
+		in.ignore(1);
+		in >> new_arr[i].mobile.code;
+		in.ignore(1);
+		in >> new_arr[i].mobile.oper;
+		in.ignore(1);
+		in >> new_arr[i].mobile.number;
+		in.ignore(1);
+		in >> new_arr[i].stats;
+	}
+	return new_arr;
+}
+
+void ShowActive(Phone* arr, int size) {
+	for (int i = 0; i < size; ++i) {
+		if (arr[i].stats == true) {
+			show(arr[i]);
+		}
+	}
+}
+
+void ShowBySur(Phone* arr, int size, string sur) {
+	for (int i = 0; i < size; ++i) {
+		if (arr[i].stats == true) {
+			if (arr[i].surname == sur) {
+				show(arr[i]);
+			}
+		}
+	}
+}
+
+int main() {
+	int a;
+	int size = 0;
+	Phone* arr = new Phone[size];
+	do {
+		cout << "==============MENU============== \n";
+		cout << "For add contact tap - 1 \n";
+		cout << "For delete contact tap - 2 \n";
+		cout << "For sort by name tap - 3 \n";
+		cout << "For sort by fax tap - 4 \n";
+		cout << "For sort by mobile phone tap - 5 \n";
+		cout << "For show all by name tap - 6 \n";
+		cout << "For show all by describe tap - 7 \n";
+		cout << "For show all by fax tap - 8 \n";
+		cout << "For show all by mobile tap - 9 \n";
+		cout << "For redact tap - 10 \n";
+		cout << "For to fill file - 11 \n";
+		cout << "For to read from file - 12 \n";
+		cout << "For show all - 13 \n";
+		cout << "For show active tap - 14 \n";
+		cout << "================================ \n";
+		cin >> a;
+		if (a < 0 || a > 13) {
+			cout << "Incorect operation, try again \n\n";
+		}
+		if (a == 1) { // добавление номера
+			++size;
+			arr = Add(arr, size);
+		}
+		if (a == 2) { // помечение номера как не активного
+			int index;
+			cin >> index;
+			arr[index - 1].stats = false;
+		}
+		if (a == 3) { // сортировка по имени
+			SortByName(size, arr);
+		}
+		if (a == 4) { // сортирока по домашнему номеру
+			SortByNum(size, arr);
+		}
+		if (a == 5) { // сортирока по мобильному номеру
+			SortByMobile(size, arr);
+		}
+		if (a == 6) { // показ по имени
+			string line;
+			cout << "Enter name --> ";
+			cin >> line;
+			SearchByName(arr, size, line);
+		}
+		if (a == 7) { // поиск по описанию
+			string line;
+			cout << "Enter describe --> ";
+			cin >> line;
+			SearchByDescribe(arr, size, line);
+		}
+		if (a == 8) { // поиск по домашнему
+			int a, b, c;
+			cout << "Enter code -- >";
+			cin >> a;
+			cout << "Enter operator -- >";
+			cin >> b;
+			cout << "Enter number -- >";
+			cin >> c;
+			while (CheckNum(a, b)) {
+				cout << "Incorect code or oper redact \n";
+				cout << "Enter code -- >";
+				cin >> a;
+				cout << "Enter operator -- >";
+				cin >> b;
+			}
+			SearchByNum(arr, size, a, b, c);
+		}
+		if (a == 9) { // поиск по мобильному
+			int a, b, c;
+			cout << "Enter code -- >";
+			cin >> a;
+			cout << "Enter operator -- >";
+			cin >> b;
+			cout << "Enter number -- >";
+			cin >> c;
+			while (CheckNum(a, b)) {
+				cout << "Incorect code or oper redact \n";
+				cout << "Enter code -- >";
+				cin >> a;
+				cout << "Enter operator -- >";
+				cin >> b;
+			}
+			SearchByMob(arr, size, a, b, c);
+		}
+		if (a == 10) {
+			string line;
+			cin.get();
+			cout << "Enter name of contact --> ";
+			cin >> line;
+			int index = FindIndex(arr, size, line);
+			arr[index] = Put();
+		}
+		if (a == 11) {
+			File(arr, size);
+		}
+		if (a == 12) {
+			arr = Read(size); // не работает
+		}
+		if (a == 13) {
+			Show(arr, size);
+		}
+		if (a == 14) {
+			ShowActive(arr, size);
+		}
+	} while (a != 0);
+}
