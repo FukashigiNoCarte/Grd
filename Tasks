@@ -1,0 +1,412 @@
+#include <iostream>
+#include <string>
+
+using namespace std;
+
+
+const int MONTH_LENGTHS[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+struct Data { // Дата
+	int day;
+	int month;
+	int year;
+};
+
+struct Task { // Задание
+	string name;
+	string describe;
+	int important;
+	bool active;
+	Data data;
+	Data del;
+};
+
+bool ComprareData(Data rhs, Data lhs);
+bool Check_important(int a);
+void ShowInd(Task* a, int index);
+Task Put();
+string put();
+void show(Task a);
+
+
+bool CheckDate(int month, int day) {
+	if (month > 12 || month <= 0) {
+		return false;
+	}
+	if (MONTH_LENGTHS[month - 1] < day || day <= 0) {
+		return false;
+	}
+	return true;
+}
+
+bool CompareDate(Data rhs, Data lhs) {
+	if (rhs.year > lhs.year) return true;
+	if (rhs.year == lhs.year) {
+		if (rhs.month > lhs.month) return true;
+		if (rhs.month == lhs.month) {
+			if (rhs.day >= lhs.day) return true;
+		}
+	}
+	return false;
+}
+
+bool Check_important(int a) {
+	if (a > 0 && a <= 5) {
+		return true;
+	}
+	return false;
+}
+
+string put() { // Введение пределанного дела
+	string line;
+	cout << "Enter --> ";
+	cin.get();
+	getline(cin, line);
+	return line;
+}
+
+Task Delete() {
+	Task temp;
+	cin >> temp.del.day;
+	cin >> temp.del.month;
+	cin >> temp.del.year;
+	return temp;
+}
+
+Task Put() { // Ведение параметров дела
+	Task temp;
+	cin.get();
+	cout << "Enter --> ";
+	getline(cin, temp.name);
+	cout << "Enter describe --> ";
+	getline(cin, temp.describe);
+	cout << "How important --> ";
+	cin >> temp.important;
+	while (!Check_important(temp.important)) {
+		cout << "Incorectly priority enter from 1 to 5 \n";
+		cout << "How important --> ";
+		cin >> temp.important;
+	}
+	temp.active = true;
+	cout << "Enter day --> ";
+	cin >> temp.data.day;
+	cout << "Enter month --> ";
+	cin >> temp.data.month;
+	cout << "Enter year --> ";
+	cin >> temp.data.year;
+	while (!CheckDate(temp.data.month, temp.data.day)) {
+		cout << "Incorectly data, try again" << endl;
+		cout << "Enter month --> ";
+		cin >> temp.data.month;
+		cout << "Enter day --> ";
+		cin >> temp.data.day;
+	}
+	temp.del.day = 0;
+	temp.del.month = 0;
+	temp.del.year = 0;
+	return temp;
+};
+
+Task* Add(Task* a, int new_size) { // Добавление дела
+	Task* arr = new Task[new_size];
+	for (int i = 0; i < new_size - 1; ++i) {
+		arr[i] = a[i];
+	}
+	arr[new_size - 1] = Put();
+	return arr;
+}
+
+int Find(Task* a, int size, int ind) { // Функция нахождения переменной
+	int index = 0;
+	for (int i = 0; i < size; ++i) {
+		if (i = ind) {
+			index = i;
+			break;
+		}
+	}
+	return index - 1;
+}
+
+int FindName(Task* a, int size, string line) {
+	int index = 0;
+	for (int i = 0; i < size; ++i) {
+		if (a[i].name == line) {
+			index = i;
+			break;
+		}
+	}
+	return index;
+}
+
+void Show(Task* a, int size) { // Функция показа всего массива
+	for (int i = 0; i < size; ++i) {
+		cout << "Name: " << a[i].name << endl;
+		cout << "Important: " << a[i].important << endl;
+		cout << "Status: " << a[i].active << endl;
+		cout << "Day: " << a[i].data.day << endl;
+		cout << "Month: " << a[i].data.month << endl;
+		cout << "Year: " << a[i].data.year << endl;
+		cout << "Delete day: " << a[i].del.day << endl;
+		cout << "Delete month: " << a[i].del.month << endl;
+		cout << "Delete year: " << a[i].del.year << endl;
+		cout << "\n\n";
+	}
+}
+
+void ShowOnday(Task* a, int size, int day, int month, int year) {
+	for (int i = 0; i < size; ++i) {
+		if (a[i].data.day = day && a[i].data.month == month && a[i].data.year == year && a[i].active == true) {
+			ShowInd(a, i);
+		}
+
+	}
+}
+
+void ShowOnWeek(Task* data, int data_size, int day, int month, int year) {
+	for (int i = 0; i < data_size; i++) {
+		if (data[i].active == true) {
+			if (year == data[i].data.year && month == data[i].data.month && (day - data[i].data.day <= 7)) {
+				ShowInd(data, i);
+			}
+		}
+	}
+}
+
+void ShowOnMonth(Task* data, int data_size, int day, int month, int year) {
+	for (int i = 0; i < data_size; i++) {
+		if (year == data[i].data.year && month == data[i].data.month && (day - data[i].data.day <= 31)) {
+			if (data[i].active == true) {
+				ShowInd(data, i);
+			}
+		}
+	}
+}
+
+
+void SortByDelete(Task* emp, int size) {
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size - 1; j++) {
+			if (CompareDate(emp[j].del, emp[j + 1].del)) {
+				Task tmp = emp[j];
+				emp[j] = emp[j + 1];
+				emp[j + 1] = tmp;
+			}
+		}
+	}
+}
+
+void SortByData(Task* emp, int size) {
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size - 1; j++) {
+			if (CompareDate(emp[j].data, emp[j + 1].data)) {
+				Task tmp = emp[j];
+				emp[j] = emp[j + 1];
+				emp[j + 1] = tmp;
+			}
+		}
+	}
+}
+
+void SortByImportant(Task* emp, int size) {
+	for (int i = 0; i < size; i++) {
+		for (int j = 0; j < size - 1; j++) {
+			if (emp[j].important > emp[j + 1].important) {
+				Task tmp = emp[j];
+				emp[j] = emp[j + 1];
+				emp[j + 1] = tmp;
+			}
+		}
+	}
+}
+
+void SearchByName(Task* a, int size, string name) {
+	for (int i = 0; i < size; ++i) {
+		if (a[i].name == name) {
+			ShowInd(a, i);
+		}
+	}
+}
+
+void SearchByPriority(Task* a, int size, int priority) {
+	for (int i = 0; i < size; ++i) {
+		if (a[i].important == priority) {
+			ShowInd(a, i);
+		}
+	}
+}
+
+void SearchByComplete(Task* a, int size, int day, int month, int year) {
+	for (int i = 0; i < size; ++i) {
+		if (a[i].data.day == day && a[i].data.month == month && a[i].data.year == year) {
+			ShowInd(a, i);
+		}
+	}
+}
+
+void SearchByDescribe(Task* a, int size, string describe) {
+	for (int i = 0; i < size; ++i) {
+		if (a[i].describe == describe) {
+			ShowInd(a, i);
+		}
+	}
+}
+
+int main() {
+	int size = 0;
+	Task* arr = new Task[size];
+	int a;
+	do {
+		cout << "=================MENU===================== \n";
+		cout << "If u want add new task tap - 1 \n";
+		cout << "If u want delete task tap - 2 \n";
+		cout << "If u want redact task tap - 3 \n";
+		cout << "If u want sort by priority - 4 \n";
+		cout << "If u want sort by date complete tap - 5 \n";
+		cout << "Show all tasks on curently day tap - 6 \n";
+		cout << "Show all tasks on curently week tap - 7 \n";
+		cout << "Show all tasks on curently month tap  - 8 \n";
+		cout << "If u want search by name - 9 \n";
+		cout << "If u want search by describe - 10 \n";
+		cout << "If u want search by priority - 11 \n";
+		cout << "If u want search by complete - 12 \n";
+		cout << "Show all tap - 13 \n";
+		cout << "========================================== \n";
+		cin >> a;
+		if (a < 0 || a > 13) {
+			cout << "Incorect put, try again \n\n";
+		}
+		if (a == 0) {
+			break;
+		}
+		if (a == 1) { // Функция добавления дела
+			++size;
+			arr = Add(arr, size);
+		}
+		if (a == 2) { // Функция удаления
+			if (!size == 0) { // если нет дел то вернется к меню
+				int index;
+				cout << "Delete --> ";
+				cin >> index;
+				if (arr[index - 1].active == true) { // если дело имеет статус активного то он его отменит если оно не активно то он вернятся к меню
+					arr[index - 1].active = false; // Дело получает статус отмененного
+					cout << "Enter day --> ";
+					cin >> arr[index].del.day;
+					cout << "Enter month --> ";
+					cin >> arr[index].del.month;
+					cout << "Enter year --> ";
+					cin >> arr[index].del.year;
+					while (!CheckDate(arr[index].del.month, arr[index].del.day)) {
+						cout << "Incoretly data try again \n";
+						cout << "Enter month --> ";
+						cin >> arr[index].del.month;
+						cout << "Enter day --> ";
+						cin >> arr[index].del.day;
+					}
+				}
+				else {
+					cout << "Already done \n";
+				}
+			}
+			else {
+				cout << "Nothing to delete try operation again \n";
+			}
+		}
+		if (a == 3) { // редактирование дела по имени
+			if (!size == 0) {
+				string line;
+				cout << "Enter rebuild --> ";
+				cin >> line;
+				int index = FindName(arr, size, line); // Нахождение индекса изменяемого дела
+				arr[index] = Put(); // введение изменения
+			}
+		}
+		if (a == 4) {
+			if (!size == 0) {
+				SortByImportant(arr, size); // Cортировка по важности
+			}
+		}
+		if (a == 5) {
+			SortByDelete(arr, size); // сортировка по дате исполнения
+		}
+		if (a == 6) {
+			int a, b, c;
+			cout << "Enter day --> ";
+			cin >> a;
+			cout << "Enter month --> ";
+			cin >> b;
+			cout << "Enter year --> ";
+			cin >> c;
+			ShowOnday(arr, size, a, b, c); // Показ дел на определеный день (день, год, месяц);
+		}
+		if (a == 7) {
+			int a, b, c;
+			cout << "Enter day --> ";
+			cin >> a;
+			cout << "Enter month --> ";
+			cin >> b;
+			cout << "Enter year --> ";
+			cin >> c;
+			while (!CheckDate(b, a)) {
+				cout << "Incorectly month or day try again \n";
+				cout << "Enter day --> ";
+				cin >> a;
+				cout << "Enter month --> ";
+				cin >> b;
+			}
+			ShowOnWeek(arr, size, a, b, c); // показ дел на следующие 7 дней
+		}
+		if (a == 8) {
+			int year, month, day;
+			cout << "Enter day --> ";
+			cin >> day;
+			cout << "Enter month --> ";
+			cin >> month;
+			cout << "Enter year --> ";
+			cin >> year;
+			while (!CheckDate(month, day)) {
+				cout << "Incorectly month or day try again \n";
+				cout << "Enter day --> ";
+				cin >> day;
+				cout << "Enter day --> ";
+				cin >> month;
+			}
+			ShowOnMonth(arr, size, day, month, year); // показ дел на месяц
+		}
+		if (a == 9) {
+			string name;
+			name = put();
+			SearchByName(arr, size, name); // поиск по имени
+		}
+		if (a == 10) {
+			string line;
+			line = put();
+			SearchByDescribe(arr, size, line); // поиск по описанию
+		}
+		if (a == 11) {
+			int priority;
+			cin >> priority;
+			SearchByPriority(arr, size, priority); // поиск по важности
+		}
+		if (a == 12) {
+			int day, month, year;
+			cout << "Enter day --> ";
+			cin >> day;
+			cout << "Enter month --> ";
+			cin >> month;
+			cout << "Enter year --> ";
+			cin >> year;
+			while (!CheckDate(month, day)) {
+				cout << "Incorectly month or day try again \n";
+				cout << "Enter day --> ";
+				cin >> day;
+				cout << "Enter day --> ";
+				cin >> month;
+			}
+			SearchByComplete(arr, size, day, month, year); // поиск по дате выполнения
+		}
+		if (a == 13) {
+			Show(arr, size); // вывод всего массива
+		}
+	} while (a != 0);
+}
+
